@@ -1,6 +1,10 @@
 flask
 flask-cors
 flask-jwt-extended
-redis
+flask-redis
 flask-sqlalchemy
 flask-restful
+alembic
+flask_migrate
+shortuuid
+psycopg2-binary
