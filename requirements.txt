@@ -9,3 +9,6 @@ flask_migrate
 shortuuid
 psycopg2-binary
 pyshorteners
+marshmallow
+flask_marshmallow
+marshmallow-sqlalchemy
