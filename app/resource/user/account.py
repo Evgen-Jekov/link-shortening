@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 from app.register.init_extensions import db
 
-class AccountUser(Resource):
+class UserAccount(Resource):
     decorators = [limiter_client.limit("100/hour")]
 
     @jwt_required()
