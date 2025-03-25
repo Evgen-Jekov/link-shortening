@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.register.init_extensions import limiter_client
 
 class UserRegister(Resource):
-    decorators = [limiter_client.limit("10 per minute")]
+    decorators = [limiter_client.limit("100/hour")]
 
     def post(self):
         try:
@@ -43,3 +43,5 @@ class UserRegister(Resource):
             return {'error': 'Database operation failed'}, 500
         except Exception as e:
             return {'error': 'Internal server error'}, 500
+        finally:
+            db.session.close()

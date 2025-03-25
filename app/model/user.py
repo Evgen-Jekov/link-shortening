@@ -10,7 +10,7 @@ class UserModel(db.Model):
     email = db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
-    link = db.relationship('LinkModel', backref='user', lazy='dynamic')
+    links = db.relationship('LinkModel', back_populates='user', lazy='dynamic')
 
 
 

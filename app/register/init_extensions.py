@@ -13,4 +13,5 @@ redis_client = FlaskRedis()
 marshmallow_client = Marshmallow()
 limiter_client = Limiter(
     key_func=get_remote_address,
-    default_limits=["5 per minute"])
+    default_limits=["5 per minute"],
+    storage_uri="redis://redis:6379/0")
