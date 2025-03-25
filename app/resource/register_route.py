@@ -4,7 +4,7 @@ from app.resource.user.logout import UserLogout
 from app.resource.user.account import UserAccount
 
 def connect_roat_to_api(api):
-    api.add_resource(UserRegister, '/register-user')
-    api.add_resource(UserLogin, '/login')
-    api.add_resource(UserLogout, '/logout')
-    api.add_resource(UserAccount, '/account')
+    api.add_resource(UserRegister, '/link/register-user')
+    api.add_resource(UserLogin, '/link/login')
+    api.add_resource(UserLogout, '/link/logout')
+    api.add_resource(UserAccount, '/link/account')
