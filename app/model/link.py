@@ -1,10 +1,10 @@
-from app.register.init_extensions import db_client
+from app.register.init_extensions import db
 
-class LinkModel(db_client.Model):
+class LinkModel(db.Model):
     __tablename__ = 'link'
 
-    id = db_client.Column(db_client.Integer, primary_key=True)
-    long_link = db_client.Column(db_client.String, nullable=False)
-    short_link = db_client.Column(db_client.String, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    long_link = db.Column(db.String, nullable=False)
+    short_link = db.Column(db.String, nullable=False)
 
-    user_id = db_client.Column(db_client.Integer, db_client.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

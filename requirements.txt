@@ -12,3 +12,4 @@ pyshorteners
 marshmallow
 flask_marshmallow
 marshmallow-sqlalchemy
+flask_limiter
