@@ -7,4 +7,5 @@ class LinkModel(db.Model):
     long_link = db.Column(db.String, nullable=False)
     short_link = db.Column(db.String, nullable=False)
 
+    id_user = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('UserModel', back_populates='links')
