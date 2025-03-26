@@ -24,29 +24,42 @@ class Link(Resource):
     def post(self):
         try:
             link_data = LinkSchema().load(request.get_json())
-            check = redis_client.get(link_data['long_link'])
-
-            if check is not None:
-                return {'long_link' : link_data['long_link'], 'short_link' : check.decode()}
+            
+            cached = redis_client.get(link_data['long_link'])
+            if cached:
+                return {
+                    'long_link': link_data['long_link'],
+                    'short_link': cached.decode(),
+                    'source': 'cache'
+                }
 
             short = short_link(link_data['long_link'])
-
-            if short is None:
-                return {'error': 'error generating short link'}, 503
-            
-            redis_client.set(link_data['long_link'], short, ex=ACCESS_EXPIRES)
+            if not short:
+                return {'error': 'Failed to generate short URL'}, 503
 
             new_link = LinkModel(
                 long_link=link_data['long_link'],
                 short_link=short,
-                id_user=int(get_jwt_identity()))
+                id_user=int(get_jwt_identity())
+            )
             
             db.session.add(new_link)
             db.session.commit()
+            
+            redis_client.set(link_data['long_link'], short, ex=ACCESS_EXPIRES)
+            
+            return {
+                'detail': LinkSchema().dump(new_link),
+            }, 200
 
-            return {'detail' : LinkSchema().dump(new_link)}, 200
+        except ValidationError as e:
+            return {'validation_error': str(e)}, 400
         except SQLAlchemyError as e:
             db.session.rollback()
-            return {'server error' : str(e)}, 500
-        except ValidationError as e:
-            return {'validate error' : str(e)}, 400
+            print(f"Database error: {str(e)}")
+            return {'database_error': str(e)}, 500
+        except Exception as e:
+            print(f"Unexpected error: {str(e)}")
+            return {'error': 'Internal server error'}, 500
+        finally:
+            db.session.close()

@@ -15,13 +15,13 @@ class UserAccount(Resource):
     def post(self):
         try:
             user = UserModel.query.filter(UserModel.id==get_jwt_identity()).first()
-            link = user.link.limit(50).all()
+            link = user.links
 
             return {'user' : UserSchema().dump(user),
-                    'links' : LinkSchema().dump(link)}, 200
+                    'links' : LinkSchema(many=True).dump(link)}, 200
         except SQLAlchemyError as e:
             return {'error' : str(e)}, 500
         except Exception as e:
-            return {'error': 'Internal server error'}, 500
+            return {'error': str(e)}, 500
         finally:
             db.session.close()

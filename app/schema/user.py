@@ -1,6 +1,7 @@
 from app.register.extensions import marshmallow_client
 from marshmallow import fields, validate, ValidationError, validates
 import re
+from app.schema.link import LinkSchema
 
 class UserSchema(marshmallow_client.Schema):
     id = fields.Integer(dump_only=True)
@@ -11,6 +12,7 @@ class UserSchema(marshmallow_client.Schema):
         validate.Length(min=6, max=100)
     ])
     email = fields.Email(validate=[validate.Length(min=0, max=50)])
+    links = fields.Nested(LinkSchema, many=True)
 
     @validates('password')
     def check_password(self, password):

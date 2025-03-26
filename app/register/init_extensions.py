@@ -16,7 +16,7 @@ marshmallow_client = Marshmallow()
 limiter_client = Limiter(
     key_func=get_remote_address,
     default_limits=["5 per minute"],
-    storage_uri="redis://redis:6379/0")
+    storage_uri="redis://localhost:6379/0")
 jwt_redis = redis.StrictRedis(
     host="localhost", 
     port=6379, db=0, 

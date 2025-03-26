@@ -29,9 +29,9 @@ class UserLogin(Resource):
         except Conflict as e:
             return {'error': str(e)}, 409
         except SQLAlchemyError as e:
-            return {'error': 'Database operation failed'}, 500
+            return {'error': str(e)}, 500
         except Exception as e:
-            return {'error': 'Internal server error'}, 500
+            return {'error': str(e)}, 500
         except Unauthorized as e:
             return {'error' : str(e)}, 401
         finally:
