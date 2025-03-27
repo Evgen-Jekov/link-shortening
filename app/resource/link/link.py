@@ -123,6 +123,8 @@ class LinkPatch(Resource):
             link.short_link = short
 
             db.session.commit()
+
+            return {'detail' : LinkSchema().dump(link)}, 200
         except ValidationError as e:
             return {'validate_error', e.messages}, 400
         except SQLAlchemyError as e:
@@ -130,3 +132,5 @@ class LinkPatch(Resource):
             return {'database_error' : str(e)}, 500
         except Exception as e:
             return {'error' : str(e)}, 400
+        finally:
+            db.session.close()
