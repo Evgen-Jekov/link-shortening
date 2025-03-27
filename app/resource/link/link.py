@@ -8,6 +8,7 @@ from app.register.init_extensions import limiter_client, ACCESS_EXPIRES, db
 from app.model.link import LinkModel
 from sqlalchemy.exc import SQLAlchemyError
 from marshmallow import ValidationError
+from redis.exceptions import RedisError
 
 def short_link(link):
     short = pyshorteners.Shortener()
@@ -17,7 +18,7 @@ def short_link(link):
     except Exception:
         return None
 
-class Link(Resource):
+class LinkCreate(Resource):
     decorators = [limiter_client.limit("100/hour")]
 
     @jwt_required()
@@ -25,7 +26,7 @@ class Link(Resource):
         try:
             link_data = LinkSchema().load(request.get_json())
             
-            cached = redis_client.get(link_data['long_link'])
+            cached = redis_client.hget(get_jwt_identity(), link_data['long_link'])
             if cached:
                 return {
                     'long_link': link_data['long_link'],
@@ -46,7 +47,8 @@ class Link(Resource):
             db.session.add(new_link)
             db.session.commit()
             
-            redis_client.set(link_data['long_link'], short, ex=ACCESS_EXPIRES)
+            redis_client.hmset(get_jwt_identity(), mapping={link_data['long_link'] : short})
+            redis_client.expire(get_jwt_identity(), ACCESS_EXPIRES)
             
             return {
                 'detail': LinkSchema().dump(new_link),
@@ -60,6 +62,39 @@ class Link(Resource):
             return {'database_error': str(e)}, 500
         except Exception as e:
             print(f"Unexpected error: {str(e)}")
-            return {'error': 'Internal server error'}, 500
+            return {'error': str(e)}, 500
+        finally:
+            db.session.close()
+
+
+class LinkDelete(Resource):
+    decorators = [limiter_client.limit("100/hour")]
+
+    @jwt_required()
+    def delete(self):
+        try:
+            link_data = LinkSchema().load(request.get_json())
+
+            link = db.session.query(LinkModel).filter_by(long_link=link_data['long_link'], 
+                                                          id_user=get_jwt_identity()).first()
+            
+            if not link:
+                raise Exception('error search link')
+            
+            db.session.delete(link)
+            db.session.commit()
+
+            redis_client.hdel(get_jwt_identity(), link_data['long_link'])
+
+            return {'succes delete' : 'link deleted happend successfully'}
+        except ValidationError as e:
+            return {'validate_error' : e.messages}, 400
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            return {'database_error' : str(e)}, 500
+        except Exception as e:
+            return {'error' : str(e)}, 500
+        except RedisError as e:
+            return {'redis_error' : str(e)}, 500
         finally:
             db.session.close()

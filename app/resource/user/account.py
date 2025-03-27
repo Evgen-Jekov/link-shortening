@@ -20,7 +20,7 @@ class UserAccount(Resource):
             return {'user' : UserSchema().dump(user),
                     'links' : LinkSchema(many=True).dump(link)}, 200
         except SQLAlchemyError as e:
-            return {'error' : str(e)}, 500
+            return {'database_error' : str(e)}, 500
         except Exception as e:
             return {'error': str(e)}, 500
         finally:

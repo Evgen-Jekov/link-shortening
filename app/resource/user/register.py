@@ -35,12 +35,12 @@ class UserRegister(Resource):
             }, 201
             
         except ValidationError as e:
-            return {'errors': e.messages}, 400
+            return {'validate_error': e.messages}, 400
         except Conflict as e:
             return {'error': str(e)}, 409
         except SQLAlchemyError as e:
             db.session.rollback()
-            return {'error': str(e)}, 500
+            return {'database_error': str(e)}, 500
         except Exception as e:
             return {'error': str(e)}, 500
         finally:

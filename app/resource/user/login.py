@@ -7,6 +7,7 @@ from werkzeug.exceptions import Conflict, Unauthorized
 from sqlalchemy.exc import SQLAlchemyError
 from app.register.init_extensions import db
 from app.register.init_extensions import limiter_client
+from marshmallow import ValidationError
 
 class UserLogin(Resource):
     decorators = [limiter_client.limit("100/hour")]
@@ -29,10 +30,12 @@ class UserLogin(Resource):
         except Conflict as e:
             return {'error': str(e)}, 409
         except SQLAlchemyError as e:
-            return {'error': str(e)}, 500
+            return {'database_error': str(e)}, 500
         except Exception as e:
             return {'error': str(e)}, 500
         except Unauthorized as e:
-            return {'error' : str(e)}, 401
+            return {'password_innocorrect' : str(e)}, 401
+        except ValidationError as e:
+            return {'validate_error' : str(e)}, 409
         finally:
             db.session.close()
