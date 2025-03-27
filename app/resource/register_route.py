@@ -2,7 +2,7 @@ from app.resource.user.register import UserRegister
 from app.resource.user.login import UserLogin
 from app.resource.user.logout import UserLogout
 from app.resource.user.account import UserAccount
-from app.resource.link.link import LinkCreate, LinkDelete
+from app.resource.link.link import LinkCreate, LinkDelete, LinkPatch
 
 def connect_roat_to_api(api):
     api.add_resource(UserRegister, '/link/register-user')
@@ -11,3 +11,4 @@ def connect_roat_to_api(api):
     api.add_resource(UserAccount, '/link/account')
     api.add_resource(LinkCreate, '/link/create-link')
     api.add_resource(LinkDelete, '/link/delete-link')
+    api.add_resource(LinkPatch, '/link/update-link')

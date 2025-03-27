@@ -35,8 +35,9 @@ class LinkCreate(Resource):
                 }
 
             short = short_link(link_data['long_link'])
+
             if not short:
-                return {'error': 'Failed to generate short URL'}, 503
+                raise Exception('Failed to generate short URL')
 
             new_link = LinkModel(
                 long_link=link_data['long_link'],
@@ -61,7 +62,6 @@ class LinkCreate(Resource):
             print(f"Database error: {str(e)}")
             return {'database_error': str(e)}, 500
         except Exception as e:
-            print(f"Unexpected error: {str(e)}")
             return {'error': str(e)}, 500
         finally:
             db.session.close()
@@ -75,7 +75,7 @@ class LinkDelete(Resource):
         try:
             link_data = LinkSchema().load(request.get_json())
 
-            link = db.session.query(LinkModel).filter_by(long_link=link_data['long_link'], 
+            link = LinkModel.query.filter_by(long_link=link_data['long_link'], 
                                                           id_user=get_jwt_identity()).first()
             
             if not link:
@@ -93,8 +93,40 @@ class LinkDelete(Resource):
             db.session.rollback()
             return {'database_error' : str(e)}, 500
         except Exception as e:
-            return {'error' : str(e)}, 500
+            return {'error' : str(e)}, 400
         except RedisError as e:
             return {'redis_error' : str(e)}, 500
         finally:
             db.session.close()
+
+
+class LinkPatch(Resource):
+    decorators = [limiter_client.limit("100/hour")]
+
+    @jwt_required()
+    def patch(self):
+        try:
+            link_data = LinkSchema().load(request.get_json())
+            link = LinkModel.query.filter_by(long_link=link_data['long_link'], 
+                                             id_user=get_jwt_identity()).first()
+            
+            if not link:
+                raise Exception('error search link')
+            
+            short = short_link(link_data['long_link'])
+
+            if not short:
+                raise Exception('Failed to generate short URL')
+
+
+            link.long_link = link_data['long_link']
+            link.short_link = short
+
+            db.session.commit()
+        except ValidationError as e:
+            return {'validate_error', e.messages}, 400
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            return {'database_error' : str(e)}, 500
+        except Exception as e:
+            return {'error' : str(e)}, 400

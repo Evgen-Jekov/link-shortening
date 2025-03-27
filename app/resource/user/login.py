@@ -36,6 +36,6 @@ class UserLogin(Resource):
         except Unauthorized as e:
             return {'password_innocorrect' : str(e)}, 401
         except ValidationError as e:
-            return {'validate_error' : str(e)}, 409
+            return {'validate_error' : str(e)}, 400
         finally:
             db.session.close()
